@@ -1,78 +1,72 @@
 # 🌡️ ESP32 DHT11 – MQTT Temperature & Humidity Monitoring System
 
-## 📌 Description générale
+## 📌 General Description
 
-Ce projet est un **système de surveillance de température et d’humidité** basé sur le protocole **MQTT**.
+This project is a **temperature and humidity monitoring system** based on the **MQTT protocol**.
 
-Il est conçu principalement pour :
+It is mainly designed for:
 
-* 🎓 **Étudiants** en systèmes embarqués / IoT
-* 🔧 **Enthusiasts** souhaitant apprendre MQTT, ESP32 et le monitoring temps réel
+* 🎓 **Students** in embedded systems / IoT
+* 🔧 **Enthusiasts** who want to learn MQTT, ESP32, and real‑time monitoring
 
-Le système est composé de **trois parties indépendantes mais connectées** :
+The system is composed of **three independent but connected parts**:
 
-1. Un **broker MQTT Mosquitto** installé sur Linux (Ubuntu)
-2. Un **ESP32 + capteur DHT11** qui publie les données
-3. Une **interface Web** qui s’abonne au broker et affiche les données en temps réel
-4. Un **script Linux** optionnel pour afficher et stocker les données dans un fichier `.log`
+1. A **Mosquitto MQTT broker** running on Linux (Ubuntu)
+2. An **ESP32 + DHT11 sensor** that publishes data
+3. A **Web interface** that subscribes to the broker and displays data in real time
+4. An optional **Linux script** to display and store received data into a `.log` file
 
 ---
 
-## 🧱 Architecture du système
+## 🧱 System Architecture
 
-![Architecture globale du système](docs/images/architecture.png)
+![Global system architecture](docs/images/architecture.png)
 
 ```
 [DHT11] → ESP32 → MQTT → Mosquitto (Linux)
                                ↓
                       Web Interface (MQTT WebSocket)
                                ↓
-                         Script Logger (.log)
+                         Logger Script (.log)
 ```
-
-[DHT11] → ESP32 → MQTT → Mosquitto (Linux)
-↓
-Web Interface (MQTT WebSocket)
-↓
-Script Logger (.log)
-
-````
 
 ---
 
-## 🐧 Partie 1 : Linux (Broker MQTT Mosquitto)
+## 🐧 Part 1: Linux (Mosquitto MQTT Broker)
 
-### 🔹 Rôle
-Le broker MQTT agit comme un **serveur central** qui reçoit les données envoyées par l’ESP32 et les redistribue aux clients abonnés (page web, scripts, etc.).
+### 🔹 Role
 
-### 🔹 Installation de Mosquitto (Ubuntu)
+The MQTT broker acts as a **central server** that receives data sent by the ESP32 and redistributes it to subscribed clients (web page, scripts, etc.).
+
+### 🔹 Mosquitto Installation (Ubuntu)
+
 ```bash
 sudo apt update
 sudo apt install mosquitto mosquitto-clients
-````
+```
 
-### 🔹 Vérification
+### 🔹 Verification
 
 ```bash
 mosquitto -v
 ```
 
-### 🔹 Activation au démarrage
+### 🔹 Enable Mosquitto at Startup
 
 ```bash
 sudo systemctl enable mosquitto
 sudo systemctl start mosquitto
 ```
 
-### 🔹 Activation du WebSocket MQTT
+### 🔹 Enable MQTT WebSocket
 
-Éditer le fichier de configuration :
+Edit the configuration file:
 
 ```bash
 sudo nano /etc/mosquitto/mosquitto.conf
 ```
 
-Ajouter :
+Add:
 
 ```conf
 listener 1883
@@ -83,7 +77,7 @@ protocol websockets
 allow_anonymous true
 ```
 
-Puis redémarrer :
+Then restart Mosquitto:
 
 ```bash
 sudo systemctl restart mosquitto
@@ -91,106 +85,106 @@ sudo systemctl restart mosquitto
 
 ---
 
-## 🔌 Partie 2 : ESP32 + DHT11
+## 🔌 Part 2: ESP32 + DHT11
 
-### 🔹 Rôle
+### 🔹 Role
 
-* Lire la **température** et l’**humidité** via le capteur DHT11
-* Publier les valeurs toutes les **2 secondes** sur le broker MQTT
+* Read **temperature** and **humidity** from the DHT11 sensor
+* Publish values every **2 seconds** to the MQTT broker
 
-### 🔹 Topics MQTT utilisés
+### 🔹 MQTT Topics Used
 
 ```text
 esp32/dht11/temperature
 esp32/dht11/humidity
 ```
 
-### 🔹 Données envoyées
+### 🔹 Published Data
 
-* Température : °C
-* Humidité : %
+* Temperature: °C
+* Humidity: %
 
-### 🔹 Fréquence
+### 🔹 Update Rate
 
-⏱️ Toutes les **2 secondes**
+⏱️ Every **2 seconds**
 
-![Schéma de câblage ESP32 + DHT11](docs/images/esp32_dht11_wiring.png)
+![ESP32 + DHT11 wiring diagram](docs/images/esp32_dht11_wiring.png)
 
 ---
 
-## 🌐 Partie 3 : Interface Web
+## 🌐 Part 3: Web Interface
 
-### 🔹 Rôle
+### 🔹 Role
 
-* S’abonner aux topics MQTT
-* Afficher les valeurs **en temps réel**
-* Fonctionne via **MQTT over WebSocket**
+* Subscribe to MQTT topics
+* Display sensor values **in real time**
+* Uses **MQTT over WebSocket**
 
-### 🔹 Technologies utilisées
+### 🔹 Technologies Used
 
 * HTML / CSS
 * JavaScript
-* Bibliothèque `mqtt.js`
+* `mqtt.js` library
 
-### 🔹 Fonctionnalités
+### 🔹 Features
 
-* Affichage moderne (dark UI)
-* Indicateur d’état de connexion
-* Mise à jour en temps réel
+* Modern UI (dark theme)
+* Connection status indicator
+* Real‑time updates
 
-![Interface Web – Affichage temps réel](docs/images/web_interface.png)
+![Web interface – real‑time display](docs/images/web_interface.png)
 
 ---
 
-## 📜 Partie 4 : Script Logger Linux
+## 📜 Part 4: Linux Logger Script
 
-### 🔹 Rôle
+### 🔹 Role
 
-* S’abonner aux mêmes topics MQTT
-* Afficher les données dans le terminal
-* Enregistrer les valeurs dans un fichier `.log`
+* Subscribe to the same MQTT topics
+* Display data in the terminal
+* Store received values in a `.log` file
 
-### 🔹 Exemple d’utilisation
+### 🔹 Example Usage
 
 ```bash
-python3 mqtt_logger.py
+./dht11_logger.sh
 ```
 
-### 🔹 Exemple de fichier log
+### 🔹 Example Log Output
 
 ```text
-2025-01-10 14:32:01 | Température: 25.3 °C | Humidité: 54 %
-2025-01-10 14:32:03 | Température: 25.4 °C | Humidité: 55 %
+2025-01-10 14:32:01 | Temperature: 25.3 °C | Humidity: 54 %
+2025-01-10 14:32:03 | Temperature: 25.4 °C | Humidity: 55 %
 ```
 
 ---
 
-## 🚀 Objectifs pédagogiques
+## 🚀 Educational Objectives
 
-* Comprendre **MQTT** (publish / subscribe)
-* Apprendre l’architecture **IoT distribuée**
-* Utiliser **ESP32** avec capteurs
-* Créer une **interface Web temps réel**
-* Manipuler Linux pour des services réseau
-
----
-
-## 🔮 Améliorations possibles
-
-* Authentification MQTT
-* Base de données (InfluxDB, SQLite)
-* Dashboard avancé (Grafana)
-* Ajout d’alertes (seuil température)
-* Support DHT22 / BME280
+* Understand **MQTT** (publish / subscribe)
+* Learn **distributed IoT architecture**
+* Use **ESP32** with sensors
+* Build a **real‑time web interface**
+* Work with Linux network services
 
 ---
 
-## 👤 Auteur
+## 🔮 Possible Improvements
 
-Projet réalisé à des fins **éducatives et expérimentales**.
+* MQTT authentication and security
+* Database integration (InfluxDB, SQLite)
+* Advanced dashboards (Grafana)
+* Alert system (temperature thresholds)
+* Support for DHT22 / BME280 sensors
 
 ---
 
-## 📄 Licence
+## 👤 Author
 
-Libre pour usage pédagogique et personnel.
+Project created for **educational and experimental** purposes.
+
+---
+
+## 📄 License
+
+Free for personal and educational use.
